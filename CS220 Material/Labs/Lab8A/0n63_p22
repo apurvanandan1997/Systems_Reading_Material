@@ -1,0 +1,347 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date:    17:42:26 05/09/2018 
+// Design Name: 
+// Module Name:    processor 
+// Project Name: 
+// Target Devices: 
+// Tool versions: 
+// Description: 
+//
+// Dependencies: 
+//
+// Revision: 
+// Revision 0.01 - File Created
+// Additional Comments: Authored by Mainak Chaudhuri
+//
+//////////////////////////////////////////////////////////////////////////////////
+module processor(clk, sw, rot_a, rot_b, rot_center, lcd_rs, lcd_rw, lcd_e, lcd4, lcd5, lcd6, lcd7
+    );
+
+   	input clk, rot_a, rot_b, rot_center;
+	input [3:0] sw;
+	output lcd_rs, lcd_rw, lcd_e, lcd4, lcd5, lcd6, lcd7;
+	wire lcd_rs, lcd_rw, lcd_e, lcd4, lcd5, lcd6, lcd7;
+	
+	wire rotation_event;
+	wire [2:0] current_state;
+	wire [4:0] read1Addr;
+	wire [4:0] read2Addr;
+	wire [4:0] writeAddr;
+	wire [15:0] writeValue;
+	wire read1Valid;
+	wire read2Valid;
+	wire writeValid;
+	wire [3:0] shift_amount;
+	wire [2:0] command;
+	wire async_input_ready;
+	wire [15:0] read1Value;
+	wire [15:0] read2Value;
+	wire [15:0] result;
+	reg [0:127] first_line_temp;
+	reg [0:127] second_line_temp;
+	wire [0:127] first_line;
+	wire [0:127] second_line;
+	wire async_output_done;
+	wire [15:0] regWriteValue;
+	
+	detect_event DE(clk, rot_a, rot_b, rotation_event);
+	input_interface II(clk, rotation_event, sw, rot_center, current_state, read1Addr, read2Addr, writeAddr, writeValue, read1Valid, read2Valid, writeValid, shift_amount, command, async_input_ready);
+	register_file RF(clk, current_state, read1Addr, read2Addr, writeAddr, regWriteValue, read1Valid, read2Valid, writeValid, read1Value, read2Value);
+	compute EX(clk, current_state, command, read1Value, read2Value, shift_amount, result);
+	lcd_interface LI(current_state, first_line, second_line, clk, lcd_rs, lcd_rw, lcd_e, lcd4, lcd5, lcd6, lcd7, async_output_done);
+	state_control SC(clk, async_input_ready, command, async_output_done, current_state);
+
+   	assign regWriteValue = ((command == 3'b101) || (command == 3'b110) || (command == 3'b111)) ? result : writeValue;
+	assign first_line = first_line_temp;
+	assign second_line = second_line_temp;
+	
+	always @ (command or read1Addr or writeAddr or writeValue or read1Value or read2Value or result) begin
+	   	case (command)
+		3'b000: begin
+		   	first_line_temp<= {8'h30,
+			              	   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   writeAddr[4]?8'h31:8'h30,
+					   writeAddr[3]?8'h31:8'h30,
+					   writeAddr[2]?8'h31:8'h30,
+					   writeAddr[1]?8'h31:8'h30,
+					   writeAddr[0]?8'h31:8'h30};
+									 
+			second_line_temp<= {writeValue[15]?8'h31:8'h30,
+			                    writeValue[14]?8'h31:8'h30,
+					    writeValue[13]?8'h31:8'h30,
+			   		    writeValue[12]?8'h31:8'h30,
+					    writeValue[11]?8'h31:8'h30,
+					    writeValue[10]?8'h31:8'h30,
+					    writeValue[9]?8'h31:8'h30,
+					    writeValue[8]?8'h31:8'h30,
+					    writeValue[7]?8'h31:8'h30,
+					    writeValue[6]?8'h31:8'h30,
+					    writeValue[5]?8'h31:8'h30,
+					    writeValue[4]?8'h31:8'h30,
+					    writeValue[3]?8'h31:8'h30,
+					    writeValue[2]?8'h31:8'h30,
+					    writeValue[1]?8'h31:8'h30,
+					    writeValue[0]?8'h31:8'h30};
+		end
+		3'b001: begin
+		   	first_line_temp<= {8'h30,
+			                   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   read1Addr[4]?8'h31:8'h30,
+					   read1Addr[3]?8'h31:8'h30,
+					   read1Addr[2]?8'h31:8'h30,
+					   read1Addr[1]?8'h31:8'h30,
+					   read1Addr[0]?8'h31:8'h30};
+									 
+			second_line_temp<= {read1Value[15]?8'h31:8'h30,
+			                    read1Value[14]?8'h31:8'h30,
+					    read1Value[13]?8'h31:8'h30,
+					    read1Value[12]?8'h31:8'h30,
+					    read1Value[11]?8'h31:8'h30,
+					    read1Value[10]?8'h31:8'h30,
+					    read1Value[9]?8'h31:8'h30,
+					    read1Value[8]?8'h31:8'h30,
+					    read1Value[7]?8'h31:8'h30,
+					    read1Value[6]?8'h31:8'h30,
+					    read1Value[5]?8'h31:8'h30,
+					    read1Value[4]?8'h31:8'h30,
+					    read1Value[3]?8'h31:8'h30,
+					    read1Value[2]?8'h31:8'h30,
+					    read1Value[1]?8'h31:8'h30,
+					    read1Value[0]?8'h31:8'h30};
+		end	   
+		3'b010: begin
+		   	first_line_temp <= {read1Value[15]?8'h31:8'h30,
+			                    read1Value[14]?8'h31:8'h30,
+					    read1Value[13]?8'h31:8'h30,
+					    read1Value[12]?8'h31:8'h30,
+					    read1Value[11]?8'h31:8'h30,
+					    read1Value[10]?8'h31:8'h30,
+					    read1Value[9]?8'h31:8'h30,
+					    read1Value[8]?8'h31:8'h30,
+					    read1Value[7]?8'h31:8'h30,
+					    read1Value[6]?8'h31:8'h30,
+					    read1Value[5]?8'h31:8'h30,
+					    read1Value[4]?8'h31:8'h30,
+					    read1Value[3]?8'h31:8'h30,
+					    read1Value[2]?8'h31:8'h30,
+					    read1Value[1]?8'h31:8'h30,
+					    read1Value[0]?8'h31:8'h30};
+									  
+			second_line_temp<= {read2Value[15]?8'h31:8'h30,
+			                    read2Value[14]?8'h31:8'h30,
+					    read2Value[13]?8'h31:8'h30,
+					    read2Value[12]?8'h31:8'h30,
+					    read2Value[11]?8'h31:8'h30,
+					    read2Value[10]?8'h31:8'h30,
+					    read2Value[9]?8'h31:8'h30,
+					    read2Value[8]?8'h31:8'h30,
+					    read2Value[7]?8'h31:8'h30,
+					    read2Value[6]?8'h31:8'h30,
+					    read2Value[5]?8'h31:8'h30,
+					    read2Value[4]?8'h31:8'h30,
+					    read2Value[3]?8'h31:8'h30,
+					    read2Value[2]?8'h31:8'h30,
+					    read2Value[1]?8'h31:8'h30,
+					    read2Value[0]?8'h31:8'h30};
+		end
+		3'b011: begin
+		   	first_line_temp<= {8'h30,
+			                   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   read1Addr[4]?8'h31:8'h30,
+					   read1Addr[3]?8'h31:8'h30,
+					   read1Addr[2]?8'h31:8'h30,
+					   read1Addr[1]?8'h31:8'h30,
+					   read1Addr[0]?8'h31:8'h30};
+									 
+			second_line_temp<= {read1Value[15]?8'h31:8'h30,
+			                    read1Value[14]?8'h31:8'h30,
+					    read1Value[13]?8'h31:8'h30,
+					    read1Value[12]?8'h31:8'h30,
+					    read1Value[11]?8'h31:8'h30,
+					    read1Value[10]?8'h31:8'h30,
+					    read1Value[9]?8'h31:8'h30,
+					    read1Value[8]?8'h31:8'h30,
+					    read1Value[7]?8'h31:8'h30,
+					    read1Value[6]?8'h31:8'h30,
+					    read1Value[5]?8'h31:8'h30,
+					    read1Value[4]?8'h31:8'h30,
+					    read1Value[3]?8'h31:8'h30,
+					    read1Value[2]?8'h31:8'h30,
+					    read1Value[1]?8'h31:8'h30,
+					    read1Value[0]?8'h31:8'h30};
+		end
+		3'b100: begin
+		   	first_line_temp<=  {read1Value[15]?8'h31:8'h30,
+			                    read1Value[14]?8'h31:8'h30,
+					    read1Value[13]?8'h31:8'h30,
+					    read1Value[12]?8'h31:8'h30,
+					    read1Value[11]?8'h31:8'h30,
+					    read1Value[10]?8'h31:8'h30,
+					    read1Value[9]?8'h31:8'h30,
+					    read1Value[8]?8'h31:8'h30,
+					    read1Value[7]?8'h31:8'h30,
+					    read1Value[6]?8'h31:8'h30,
+					    read1Value[5]?8'h31:8'h30,
+					    read1Value[4]?8'h31:8'h30,
+					    read1Value[3]?8'h31:8'h30,
+					    read1Value[2]?8'h31:8'h30,
+					    read1Value[1]?8'h31:8'h30,
+					    read1Value[0]?8'h31:8'h30};
+									  
+			second_line_temp<= {read2Value[15]?8'h31:8'h30,
+			                    read2Value[14]?8'h31:8'h30,
+					    read2Value[13]?8'h31:8'h30,
+					    read2Value[12]?8'h31:8'h30,
+					    read2Value[11]?8'h31:8'h30,
+					    read2Value[10]?8'h31:8'h30,
+					    read2Value[9]?8'h31:8'h30,
+					    read2Value[8]?8'h31:8'h30,
+					    read2Value[7]?8'h31:8'h30,
+					    read2Value[6]?8'h31:8'h30,
+					    read2Value[5]?8'h31:8'h30,
+					    read2Value[4]?8'h31:8'h30,
+					    read2Value[3]?8'h31:8'h30,
+					    read2Value[2]?8'h31:8'h30,
+					    read2Value[1]?8'h31:8'h30,
+					    read2Value[0]?8'h31:8'h30};
+		end
+		3'b101: begin
+		   	first_line_temp<= {8'h30,
+			                   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   writeAddr[4]?8'h31:8'h30,
+					   writeAddr[3]?8'h31:8'h30,
+					   writeAddr[2]?8'h31:8'h30,
+					   writeAddr[1]?8'h31:8'h30,
+					   writeAddr[0]?8'h31:8'h30};
+									 
+			second_line_temp<= {result[15]?8'h31:8'h30,
+			                    result[14]?8'h31:8'h30,
+					    result[13]?8'h31:8'h30,
+					    result[12]?8'h31:8'h30,
+					    result[11]?8'h31:8'h30,
+					    result[10]?8'h31:8'h30,
+					    result[9]?8'h31:8'h30,
+					    result[8]?8'h31:8'h30,
+					    result[7]?8'h31:8'h30,
+					    result[6]?8'h31:8'h30,
+					    result[5]?8'h31:8'h30,
+					    result[4]?8'h31:8'h30,
+					    result[3]?8'h31:8'h30,
+					    result[2]?8'h31:8'h30,
+					    result[1]?8'h31:8'h30,
+					    result[0]?8'h31:8'h30};
+		end
+		3'b110: begin
+		   	first_line_temp<= {8'h30,
+			                   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   writeAddr[4]?8'h31:8'h30,
+					   writeAddr[3]?8'h31:8'h30,
+					   writeAddr[2]?8'h31:8'h30,
+					   writeAddr[1]?8'h31:8'h30,
+					   writeAddr[0]?8'h31:8'h30};
+									 
+			second_line_temp<= {result[15]?8'h31:8'h30,
+			                    result[14]?8'h31:8'h30,
+					    result[13]?8'h31:8'h30,
+					    result[12]?8'h31:8'h30,
+					    result[11]?8'h31:8'h30,
+					    result[10]?8'h31:8'h30,
+					    result[9]?8'h31:8'h30,
+					    result[8]?8'h31:8'h30,
+					    result[7]?8'h31:8'h30,
+					    result[6]?8'h31:8'h30,
+					    result[5]?8'h31:8'h30,
+					    result[4]?8'h31:8'h30,
+					    result[3]?8'h31:8'h30,
+					    result[2]?8'h31:8'h30,
+					    result[1]?8'h31:8'h30,
+					    result[0]?8'h31:8'h30};
+		end
+		3'b111: begin
+		   	first_line_temp<= {8'h30,
+			                   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   8'h30,
+					   writeAddr[4]?8'h31:8'h30,
+					   writeAddr[3]?8'h31:8'h30,
+					   writeAddr[2]?8'h31:8'h30,
+				    	   writeAddr[1]?8'h31:8'h30,
+					   writeAddr[0]?8'h31:8'h30};
+									 
+			second_line_temp<= {result[15]?8'h31:8'h30,
+			                    result[14]?8'h31:8'h30,
+					    result[13]?8'h31:8'h30,
+					    result[12]?8'h31:8'h30,
+					    result[11]?8'h31:8'h30,
+					    result[10]?8'h31:8'h30,
+					    result[9]?8'h31:8'h30,
+					    result[8]?8'h31:8'h30,
+					    result[7]?8'h31:8'h30,
+					    result[6]?8'h31:8'h30,
+					    result[5]?8'h31:8'h30,
+					    result[4]?8'h31:8'h30,
+					    result[3]?8'h31:8'h30,
+					    result[2]?8'h31:8'h30,
+					    result[1]?8'h31:8'h30,
+					    result[0]?8'h31:8'h30};
+		end
+		endcase
+	end
+
+endmodule

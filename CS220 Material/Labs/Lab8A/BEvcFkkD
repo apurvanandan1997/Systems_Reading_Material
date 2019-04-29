@@ -1,0 +1,280 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date:    21:07:14 05/08/2018 
+// Design Name: 
+// Module Name:    input_interface 
+// Project Name: 
+// Target Devices: 
+// Tool versions: 
+// Description: 
+//
+// Dependencies: 
+//
+// Revision: 
+// Revision 0.01 - File Created
+// Additional Comments: Authored by Mainak Chaudhuri
+//
+//////////////////////////////////////////////////////////////////////////////////
+`include "state_defs.v"
+
+module input_interface(clk, rotation_event, sw, rot_center, current_state, read1Addr, read2Addr, writeAddr, writeValue, read1Valid, read2Valid, writeValid, shift_amount, command, async_input_ready
+    );
+
+   	input clk;
+   	input rotation_event;
+	input rot_center;
+	input [3:0] sw;
+	input [2:0] current_state;
+	
+	output [4:0] read1Addr;
+	output [4:0] read2Addr;
+	output [4:0] writeAddr;
+	output [15:0] writeValue;
+	output read1Valid;
+	output read2Valid;
+	output writeValid;
+	output [3:0] shift_amount;
+	output [2:0] command;
+	output async_input_ready;
+	
+	reg [4:0] read1Addr;
+	reg [4:0] read2Addr;
+	reg [4:0] writeAddr;
+	reg [15:0] writeValue;
+	reg read1Valid;
+	reg read2Valid;
+	reg writeValid;
+	reg [3:0] shift_amount;
+	reg [2:0] command;
+	reg async_input_ready;
+	
+	reg [3:0] counter;
+	reg prev_rotation_event;
+	
+	initial begin
+	   	counter = 0;
+		prev_rotation_event = 1;
+		async_input_ready = 0;
+		read1Valid = 0;
+		read2Valid = 0;
+		writeValid = 0;
+	end
+	
+	always @ (posedge clk) begin
+	  	 if ((current_state == `STATE_END) || (rot_center == 1)) begin
+		   	counter <= 0;
+			async_input_ready <= 0;
+			read1Valid <= 0;
+			read2Valid <= 0;
+			writeValid <= 0;
+		end
+		else if ((prev_rotation_event == 0) && (rotation_event == 1)) begin
+		   	if (counter == 0) begin
+			   	command <= sw[2:0];
+				counter <= counter + 1;
+			end
+			else if (command == 3'b000) begin
+			   	if (counter == 1) begin
+				   	writeAddr[3:0] <= sw;
+					counter <= counter + 1;
+				end
+				else if (counter == 2) begin
+				   	writeAddr[4] <= sw[0];
+					counter <= counter + 1;
+				end
+				else if (counter == 3) begin
+				   	writeValue[3:0] <= sw;
+					counter <= counter + 1;
+				end
+				else if (counter == 4) begin
+				   	writeValue[7:4] <= sw;
+					counter <= counter + 1;
+				end
+				else if (counter == 5) begin
+				   	writeValue[11:8] <= sw;
+					counter <= counter + 1;
+				end
+				else if (counter == 6) begin
+				   	writeValue[15:12] <= sw;
+					counter <= counter + 1;
+					writeValid <= 1;
+					async_input_ready <= 1;
+				end
+			end
+			else if (command == 3'b001) begin
+			   	if (counter == 1) begin
+				   	read1Addr[3:0] <= sw;
+					counter <= counter + 1;
+				end
+				else if (counter == 2) begin
+				   	read1Addr[4] <= sw[0];
+					counter <= counter + 1;
+					read1Valid <= 1;
+					async_input_ready <= 1;
+				end
+			end
+			else if (command == 3'b010) begin
+			   	if (counter == 1) begin
+				   	read1Addr[3:0] <= sw;
+					counter <= counter + 1;
+				end
+				else if (counter == 2) begin
+				   	read1Addr[4] <= sw[0];
+					counter <= counter + 1;
+				end
+				else if (counter == 3) begin
+				   	read2Addr[3:0] <= sw;
+					counter <= counter + 1;
+				end
+				else if (counter == 4) begin
+				   	read2Addr[4] <= sw[0];
+					counter <= counter + 1;
+					read1Valid <= 1;
+					read2Valid <= 1;
+					async_input_ready <= 1;
+				end
+			end
+			else if (command == 3'b011) begin
+			   	if (counter == 1) begin
+				   	read1Addr[3:0] <= sw;
+					counter <= counter + 1;
+				end
+				else if (counter == 2) begin
+				   	read1Addr[4] <= sw[0];
+					counter <= counter + 1;
+				end
+				else if (counter == 3) begin
+				   	writeAddr[3:0] <= sw;
+					counter <= counter + 1;
+				end
+				else if (counter == 4) begin
+				   	writeAddr[4] <= sw[0];
+					counter <= counter + 1;
+				end
+				else if (counter == 5) begin
+				   	writeValue[3:0] <= sw;
+					counter <= counter + 1;
+				end
+				else if (counter == 6) begin
+				   	writeValue[7:4] <= sw;
+					counter <= counter + 1;
+				end
+				else if (counter == 7) begin
+				   	writeValue[11:8] <= sw;
+					counter <= counter + 1;
+				end
+				else if (counter == 8) begin
+				   	writeValue[15:12] <= sw;
+					counter <= counter + 1;
+					read1Valid <= 1;
+					writeValid <= 1;
+					async_input_ready <= 1;
+				end
+			end
+			else if (command == 3'b100) begin
+			   	if (counter == 1) begin
+				   	read1Addr[3:0] <= sw;
+					counter <= counter + 1;
+				end
+				else if (counter == 2) begin
+				   	read1Addr[4] <= sw[0];
+					counter <= counter + 1;
+				end
+				else if (counter == 3) begin
+				   	read2Addr[3:0] <= sw;
+					counter <= counter + 1;
+				end
+				else if (counter == 4) begin
+				   	read2Addr[4] <= sw[0];
+					counter <= counter + 1;
+				end
+				else if (counter == 5) begin
+				   	writeAddr[3:0] <= sw;
+					counter <= counter + 1;
+				end
+				else if (counter == 6) begin
+				   	writeAddr[4] <= sw[0];
+					counter <= counter + 1;
+				end
+				else if (counter == 7) begin
+				   	writeValue[3:0] <= sw;
+					counter <= counter + 1;
+				end
+				else if (counter == 8) begin
+				   	writeValue[7:4] <= sw;
+					counter <= counter + 1;
+				end
+				else if (counter == 9) begin
+				   	writeValue[11:8] <= sw;
+					counter <= counter + 1;
+				end
+				else if (counter == 10) begin
+				   	writeValue[15:12] <= sw;
+					counter <= counter + 1;
+					read1Valid <= 1;
+					read2Valid <= 1;
+					writeValid <= 1;
+					async_input_ready <= 1;
+				end
+			end
+			else if ((command == 3'b101) || (command == 3'b110)) begin
+			   	if (counter == 1) begin
+				   	read1Addr[3:0] <= sw;
+					counter <= counter + 1;
+				end
+				else if (counter == 2) begin
+				   	read1Addr[4] <= sw[0];
+					counter <= counter + 1;
+				end
+				else if (counter == 3) begin
+				   	read2Addr[3:0] <= sw;
+					counter <= counter + 1;
+				end
+				else if (counter == 4) begin
+				   	read2Addr[4] <= sw[0];
+					counter <= counter + 1;
+				end
+				else if (counter == 5) begin
+				   	writeAddr[3:0] <= sw;
+					counter <= counter + 1;
+				end
+				else if (counter == 6) begin
+				   	writeAddr[4] <= sw[0];
+					counter <= counter + 1;
+					read1Valid <= 1;
+					read2Valid <= 1;
+					async_input_ready <= 1;
+				end
+			end
+			else if (command == 3'b111) begin
+			   	if (counter == 1) begin
+				   	read1Addr[3:0] <= sw;
+					counter <= counter + 1;
+				end
+				else if (counter == 2) begin
+				   	read1Addr[4] <= sw[0];
+					counter <= counter + 1;
+				end
+				else if (counter == 3) begin
+				   	writeAddr[3:0] <= sw;
+					counter <= counter + 1;
+				end
+				else if (counter == 4) begin
+				   	writeAddr[4] <= sw[0];
+					counter <= counter + 1;
+				end
+				else if (counter == 5) begin
+				   	shift_amount <= sw;
+					counter <= counter + 1;
+					read1Valid <= 1;
+					async_input_ready <= 1;
+				end
+			end
+		end
+		prev_rotation_event <= rotation_event;
+	end
+
+endmodule

@@ -1,0 +1,98 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date:    11:13:47 04/26/2018 
+// Design Name: 
+// Module Name:    encode 
+// Project Name: 
+// Target Devices: 
+// Tool versions: 
+// Description: 
+//
+// Dependencies: 
+//
+// Revision: 
+// Revision 0.01 - File Created
+// Additional Comments: Authored by Mainak Chaudhuri
+//
+//////////////////////////////////////////////////////////////////////////////////
+module encode(clk, data_packet, data_packet_valid, done, encoded_data, output_parity
+    );
+
+   	input clk;
+	input [15:0] data_packet;
+	input data_packet_valid;
+	input done;
+	
+	output [7:0] encoded_data;
+	output output_parity;
+	
+	reg [7:0] encoded_data;
+	reg output_parity;
+	
+	initial begin
+	   	encoded_data = 0;
+	end
+	
+	always @ (posedge clk) begin
+	   	if ((done == 0) && (data_packet_valid == 1)) begin
+		   	if (data_packet == 16'h0001) begin
+			   	encoded_data <= encoded_data + 8'h00;
+			end
+			else if (data_packet == 16'h0002) begin
+			   	encoded_data <= encoded_data + 8'h01;
+			end
+			else if (data_packet == 16'h0004) begin
+			   	encoded_data <= encoded_data + 8'h02;
+			end
+			else if (data_packet == 16'h0008) begin
+			   	encoded_data <= encoded_data + 8'h03;
+			end
+			else if (data_packet == 16'h0010) begin
+			   	encoded_data <= encoded_data + 8'h04;
+			end
+			else if (data_packet == 16'h0020) begin
+			   	encoded_data <= encoded_data + 8'h05;
+			end
+			else if (data_packet == 16'h0040) begin
+			   	encoded_data <= encoded_data + 8'h06;
+			end
+			else if (data_packet == 16'h0080) begin
+			   	encoded_data <= encoded_data + 8'h07;
+			end
+			else if (data_packet == 16'h0100) begin
+			   	encoded_data <= encoded_data + 8'h08;
+			end
+			else if (data_packet == 16'h0200) begin
+			   	encoded_data <= encoded_data + 8'h09;
+			end
+			else if (data_packet == 16'h0400) begin
+			   	encoded_data <= encoded_data + 8'h0a;
+			end
+			else if (data_packet == 16'h0800) begin
+			   	encoded_data <= encoded_data + 8'h0b;
+			end
+			else if (data_packet == 16'h1000) begin
+			   	encoded_data <= encoded_data + 8'h0c;
+			end
+			else if (data_packet == 16'h2000) begin
+			   	encoded_data <= encoded_data + 8'h0d;
+			end
+			else if (data_packet == 16'h4000) begin
+			   	encoded_data <= encoded_data + 8'h0e;
+			end
+			else if (data_packet == 16'h8000) begin
+			   	encoded_data <= encoded_data + 8'h0f;
+			end
+			else begin
+			   	encoded_data <= encoded_data + 8'hff;
+			end
+		end
+		if (done == 1) begin
+		   	output_parity <= encoded_data[0] ^ encoded_data[1] ^ encoded_data[2] ^ encoded_data[3] ^ encoded_data[4] ^ encoded_data[5] ^ encoded_data[6] ^ encoded_data[7];
+		end
+	end
+
+endmodule

@@ -1,0 +1,61 @@
+# floatarray.s
+#
+# Author: Mainak Chaudhuri
+#
+
+           .data
+arrayA:    .space 60
+inputmsgn: .asciiz "Enter n:\n"
+inputmsgA: .asciiz "Enter array A:\n"
+errmsg:    .asciiz "n must be positive.\n"
+msg:       .asciiz "Output: "
+endmsg:    .asciiz "\n"
+
+        .text
+        .globl main
+main:   li   $v0, 4           # syscall 4 (print_string)
+        la   $a0, inputmsgn   # prompt to input n
+        syscall
+        li   $v0, 5           # syscall 5 (read_int)
+        syscall               # read n
+        slti $t0, $v0, 1      # if (n < 1) leave with error msg
+        beq  $t0, $0, loop
+        li   $v0, 4           # syscall 4 (print_string)
+        la   $a0, errmsg
+        syscall
+        jr   $ra
+loop:   add  $t0, $v0, $0     # $t0 has n
+        li   $v0, 4
+        la   $a0, inputmsgA   # prompt to input A
+        syscall
+        xor  $t1, $t1, $t1
+        la   $t2, arrayA      # $t2 has starting address of arrayA
+        li   $v0, 6           # syscall 6 (read_float)
+loop1:  syscall
+        swc1 $f0, 0($t2)
+        addi $t1, $t1, 1
+        addi $t2, $t2, 4
+        slt  $t3, $t1, $t0
+        bne  $t3, $0, loop1
+        xor  $t1, $t1, $t1
+        mtc1 $t1, $f12          # initialize $f12 to 0 (output)
+        la   $t2, arrayA
+loop3:  lwc1 $f0, 0($t2)
+        andi $t3, $t1, 1
+        beq  $t3, $0, loop2
+        sub.s $f12, $f12, $f0
+        j loop4
+loop2:  add.s $f12, $f12, $f0
+loop4:  addi $t1, $t1, 1
+        addi $t2, $t2, 4
+        slt  $t3, $t1, $t0
+        bne  $t3, $0, loop3
+        li   $v0, 4
+        la   $a0, msg           # print output
+        syscall
+        li   $v0, 2
+        syscall
+        li   $v0, 4
+        la   $a0, endmsg
+        syscall
+        jr   $ra

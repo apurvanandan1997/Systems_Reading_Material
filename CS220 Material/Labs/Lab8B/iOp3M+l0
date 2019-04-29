@@ -1,0 +1,51 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date:    11:59:49 05/10/2018 
+// Design Name: 
+// Module Name:    compute 
+// Project Name: 
+// Target Devices: 
+// Tool versions: 
+// Description: 
+//
+// Dependencies: 
+//
+// Revision: 
+// Revision 0.01 - File Created
+// Additional Comments: Authored by Mainak Chaudhuri
+//
+//////////////////////////////////////////////////////////////////////////////////
+`include "state_defs.v"
+
+module compute(clk, current_state, command, operand1, operand2, shift_amount, result
+    );
+
+   	input clk;
+	input [2:0] current_state;
+	input [2:0] command;
+	input [15:0] operand1;
+	input [15:0] operand2;
+	input [3:0] shift_amount;
+	
+	output [15:0] result;
+	
+	reg [15:0] result;
+	
+	always @ (posedge clk) begin
+	   	if (current_state == `STATE_COMPUTE) begin
+		   	if (command == 3'b101) begin
+			   result <= ($signed(operand1) < $signed(operand2)) ? 16'h0001 : 16'h0000;
+			end
+			else if (command == 3'b110) begin
+			   result <= operand1 ^ operand2;
+			end
+			else if (command == 3'b111) begin
+			   result <= $signed(operand1) >>> shift_amount;
+			end
+		end
+	end
+
+endmodule

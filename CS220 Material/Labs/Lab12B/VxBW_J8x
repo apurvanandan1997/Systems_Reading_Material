@@ -1,0 +1,64 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date:    11:39:15 04/26/2018 
+// Design Name: 
+// Module Name:    encoder_top 
+// Project Name: 
+// Target Devices: 
+// Tool versions: 
+// Description: 
+//
+// Dependencies: 
+//
+// Revision: 
+// Revision 0.01 - File Created
+// Additional Comments: Authored by Mainak Chaudhuri
+//
+//////////////////////////////////////////////////////////////////////////////////
+module encoder_top(clk, pb, led0, led1, led2, led3, led4, led5, led6, led7
+    );
+
+   	input clk, pb;
+	
+	output led0, led1, led2, led3, led4, led5, led6, led7;
+	
+	reg led0, led1, led2, led3, led4, led5, led6, led7;
+	
+	wire [15:0] data_packet;
+	wire data_packet_valid;
+	wire done;
+	wire [7:0] encoded_data;
+	wire output_parity;
+	
+	reg pb_pressed;
+	
+	initial begin
+	   	pb_pressed = 0;
+	end
+	
+	fetch dfetch (clk, data_packet, data_packet_valid, done);
+	encode dencode (clk, data_packet, data_packet_valid, done, encoded_data, output_parity);
+	
+	always @ (posedge clk) begin
+	   	if (done == 1) begin
+		   	if ((pb == 1) || (pb_pressed == 1)) begin
+			   	pb_pressed <= 1;
+				led0 <= output_parity;
+				led1 <= 0;
+				led2 <= 0;
+				led3 <= 0;
+				led4 <= 0;
+				led5 <= 0;
+				led6 <= 0;
+				led7 <= 0;
+			end
+			else begin
+			   	{led7,led6,led5,led4,led3,led2,led1,led0} <= encoded_data;
+			end
+		end
+	end
+
+endmodule

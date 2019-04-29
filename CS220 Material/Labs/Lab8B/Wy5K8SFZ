@@ -1,0 +1,27 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date:    11:57:45 05/10/2018 
+// Design Name: 
+// Module Name:    state_defs 
+// Project Name: 
+// Target Devices: 
+// Tool versions: 
+// Description: 
+//
+// Dependencies: 
+//
+// Revision: 
+// Revision 0.01 - File Created
+// Additional Comments: Authored by Mainak Chaudhuri
+//
+//////////////////////////////////////////////////////////////////////////////////
+`define STATE_INPUT   3'b000
+`define STATE_RF_RW   3'b001
+`define STATE_RF_R    3'b010
+`define STATE_RF_W    3'b011
+`define STATE_COMPUTE 3'b100
+`define STATE_OUTPUT  3'b101
+`define STATE_END     3'b110

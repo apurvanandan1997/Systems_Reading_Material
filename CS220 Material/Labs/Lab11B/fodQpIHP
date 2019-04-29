@@ -1,0 +1,106 @@
+# binsearch.s
+#
+# Author: Mainak Chaudhuri
+#
+
+           .data
+arrayA:    .space 48
+inputmsgn: .asciiz "Enter n:\n"
+inputmsgA: .asciiz "Enter sorted array:\n"
+inputmsgK: .asciiz "Search key:\n"
+errmsg:    .asciiz "n must be positive.\n"
+msg1:      .asciiz "Found element at index "
+msg2:      .asciiz "Element was not found"
+endmsg:    .asciiz "\n"
+
+# Binary search function will have the following parameters:
+# $a0 --> starting address of array
+# $a1 --> left index
+# $a2 --> right index
+# $a3 --> search key
+
+        .text
+binsearch: slt  $t0, $a1, $a2       # left < right ?
+           bne  $t0, $0, recursion
+           sll  $t1, $a1, 2         # left >= right, A[left] == key ?
+           add  $t1, $t1, $a0
+           lw   $t1, 0($t1)         # load A[left]
+           beq  $t1, $a3, label1    # found key ?
+           addi $v0, $0, -1         # not found key, return -1
+           jr   $ra
+label1:    add  $v0, $0, $a1        # found key, return left index
+           jr   $ra
+recursion: addi $sp, $sp, -4        # left < right
+           add  $t0, $a1, $a2
+           srl  $t0, $t0, 1         # $t0 has mid index
+           sll  $t1, $t0, 2
+           add  $t1, $t1, $a0
+           lw   $t1, 0($t1)         # load A[mid]
+           slt  $t1, $t1, $a3       # A[mid] < key ?
+           bne  $t1, $0, label2
+           add  $a2, $0, $t0        # A[mid] >= key
+           j    label3
+label2:    addi $a1, $t0, 1         # A[mid] < key
+label3:    sw   $ra, 0($sp)
+           jal  binsearch
+           lw   $ra, 0($sp)
+           addi $sp, $sp, 4
+           jr   $ra
+
+
+        .globl main
+main:      li   $v0, 4           # syscall 4 (print_string)
+           la   $a0, inputmsgn   # prompt to input n
+           syscall
+           li   $v0, 5           # syscall 5 (read_int)
+           syscall               # read n
+           slti $t0, $v0, 1      # if (n < 1) leave with error msg
+           beq  $t0, $0, label4
+           li   $v0, 4           # syscall 4 (print_string)
+           la   $a0, errmsg
+           syscall
+           jr   $ra
+label4:    add  $t0, $v0, $0     # $t0 has n
+           li   $v0, 4
+           la   $a0, inputmsgA   # prompt to input A
+           syscall
+           xor  $t1, $t1, $t1
+           la   $t2, arrayA      # $t2 has starting address of arrayA
+loop:      li   $v0, 5
+           syscall
+           sw   $v0, 0($t2)
+           addi $t1, $t1, 1
+           addi $t2, $t2, 4
+           slt  $t3, $t1, $t0
+           bne  $t3, $0, loop
+           li   $v0, 4
+           la   $a0, inputmsgK
+           syscall                # prompt to input search key
+           li   $v0, 5
+           syscall
+           la   $a0, arrayA       # set up parameters for binsearch
+           add  $a1, $0, $0
+           addi $a2, $t0, -1
+           add  $a3, $v0, $0
+           addi $sp, $sp, -4      # create space on stack to save $ra
+           sw   $ra, 0($sp)
+           jal  binsearch
+           add  $t1, $v0, $0      # save return index in $t1
+           slt  $t0, $v0, $0      # return index < 0 ?
+           bne  $t0, $0, not_found
+           li   $v0, 4
+           la   $a0, msg1
+           syscall
+           li   $v0, 1            # syscall 1 (print_int)
+           add  $a0, $t1, $0
+           syscall
+           j label5
+not_found: li   $v0, 4
+           la   $a0, msg2
+           syscall
+label5:    li   $v0, 4
+           la   $a0, endmsg
+           syscall
+           lw   $ra, 0($sp)
+           addi $sp, $sp, 4
+           jr   $ra

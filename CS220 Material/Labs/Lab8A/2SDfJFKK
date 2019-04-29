@@ -1,0 +1,23 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date:    16:54:58 05/08/2018 
+// Design Name: 
+// Module Name:    latency 
+// Project Name: 
+// Target Devices: 
+// Tool versions: 
+// Description: 
+//
+// Dependencies: 
+//
+// Revision: 
+// Revision 0.01 - File Created
+// Additional Comments: Authored by Mainak Chaudhuri
+//
+//////////////////////////////////////////////////////////////////////////////////
+`define LATENCY_RF_READ  2
+`define LATENCY_RF_WRITE 2
+`define LATENCY_COMPUTE 16

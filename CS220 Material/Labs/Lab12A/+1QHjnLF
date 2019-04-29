@@ -1,0 +1,71 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date:    09:07:51 04/26/2018 
+// Design Name: 
+// Module Name:    decoder_top 
+// Project Name: 
+// Target Devices: 
+// Tool versions: 
+// Description: 
+//
+// Dependencies: 
+//
+// Revision: 
+// Revision 0.01 - File Created
+// Additional Comments: Authored by Mainak Chaudhuri
+//
+//////////////////////////////////////////////////////////////////////////////////
+module decoder_top(clk, pb, led0, led1, led2, led3, led4, led5, led6, led7
+    );
+
+   	input clk, pb;
+	
+	output led0, led1, led2, led3, led4, led5, led6, led7;
+	
+	reg led0, led1, led2, led3, led4, led5, led6, led7;
+	
+	wire [2:0] index_reg;
+	wire index_reg_valid;
+	wire done;
+	
+	wire [7:0] xored_output;
+	wire output_parity;
+	
+	reg pb_pressed;
+	
+	initial begin
+	   	pb_pressed = 0;
+	end
+	
+	index_fetch ifetch (clk, index_reg, index_reg_valid, done);
+	index_decode idecode (clk, index_reg, index_reg_valid, done, xored_output, output_parity);
+	
+	always @ (posedge clk) begin
+	   	if (done == 1) begin
+		   	if ((pb == 1) || (pb_pressed == 1)) begin
+			   	pb_pressed <= 1;
+				led0 <= output_parity;
+				led1 <= 0;
+				led2 <= 0;
+				led3 <= 0;
+				led4 <= 0;
+				led5 <= 0;
+				led6 <= 0;
+				led7 <= 0;
+			end
+			else begin
+			   	led0 <= xored_output[0];
+				led1 <= xored_output[1];
+				led2 <= xored_output[2];
+				led3 <= xored_output[3];
+				led4 <= xored_output[4];
+				led5 <= xored_output[5];
+				led6 <= xored_output[6];
+				led7 <= xored_output[7];
+			end
+		end
+	end
+endmodule

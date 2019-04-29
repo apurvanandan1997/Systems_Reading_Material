@@ -1,0 +1,94 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date:    16:22:11 05/10/2018 
+// Design Name: 
+// Module Name:    state_control 
+// Project Name: 
+// Target Devices: 
+// Tool versions: 
+// Description: 
+//
+// Dependencies: 
+//
+// Revision: 
+// Revision 0.01 - File Created
+// Additional Comments: Authored by Mainak Chaudhuri
+//
+//////////////////////////////////////////////////////////////////////////////////
+`include "state_defs.v"
+`include "latency.v"
+
+module state_control(clk, async_input_ready, command, async_output_done, current_state
+    );
+
+   	input clk;
+	input async_input_ready;
+	input [2:0] command;
+	input async_output_done;
+	
+	output [2:0] current_state;
+	
+	reg [2:0] current_state;
+
+	reg [4:0] delay_count;
+	
+	initial begin
+	   	current_state = `STATE_INPUT;
+	end
+	
+	always @ (posedge clk) begin
+	   	if ((current_state == `STATE_INPUT) && (async_input_ready == 1)) begin
+			current_state <= `STATE_RF_RW;
+			delay_count <= 0;
+		end
+		else if ((current_state == `STATE_RF_RW) && (delay_count != `LATENCY_RF_READ)) begin
+		   	delay_count <= delay_count + 1;
+		end
+		else if ((current_state == `STATE_RF_RW) && (delay_count == `LATENCY_RF_READ) &&
+		          ((command == 3'b000) || (command == 3'b001) || (command == 3'b011))) begin
+		   	current_state <= `STATE_OUTPUT;
+		end
+		else if ((current_state == `STATE_RF_RW) && (delay_count == `LATENCY_RF_READ) &&
+		          ((command == 3'b010) || (command == 3'b100) || (command == 3'b101) || (command == 3'b110))) begin
+		   	current_state <= `STATE_RF_R;
+			delay_count <= 0;
+		end
+		else if ((current_state == `STATE_RF_RW) && (delay_count == `LATENCY_RF_READ) && (command == 3'b111)) begin
+		   	current_state <= `STATE_COMPUTE;
+			delay_count <= 0;
+		end
+		else if ((current_state == `STATE_RF_R) && (delay_count != `LATENCY_RF_READ)) begin
+		   	delay_count <= delay_count + 1;
+		end
+		else if ((current_state == `STATE_RF_R) && (delay_count == `LATENCY_RF_READ) && ((command == 3'b010) || (command == 3'b100))) begin
+		   	current_state <= `STATE_OUTPUT;
+		end
+		else if ((current_state == `STATE_RF_R) && (delay_count == `LATENCY_RF_READ) && ((command == 3'b101) || (command == 3'b110))) begin
+		   	current_state <= `STATE_COMPUTE;
+			delay_count <= 0;
+		end
+		else if ((current_state == `STATE_COMPUTE) && (delay_count != `LATENCY_COMPUTE)) begin
+		   	delay_count <= delay_count + 1;
+		end
+		else if ((current_state == `STATE_COMPUTE) && (delay_count == `LATENCY_COMPUTE)) begin
+		   	current_state <= `STATE_RF_W;
+			delay_count <= 0;
+		end
+		else if ((current_state == `STATE_RF_W) && (delay_count != `LATENCY_RF_WRITE)) begin
+		   	delay_count <= delay_count + 1;
+		end
+		else if ((current_state == `STATE_RF_W) && (delay_count == `LATENCY_RF_WRITE)) begin
+		   	current_state <= `STATE_OUTPUT;
+		end
+		else if ((current_state == `STATE_OUTPUT) && (async_output_done == 1)) begin
+		   	current_state <= `STATE_END;
+		end
+		else if (current_state == `STATE_END) begin
+		   	current_state <= `STATE_INPUT;
+		end
+	end
+
+endmodule

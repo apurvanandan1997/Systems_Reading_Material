@@ -1,0 +1,64 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date:    23:07:33 05/01/2018 
+// Design Name: 
+// Module Name:    mem 
+// Project Name: 
+// Target Devices: 
+// Tool versions: 
+// Description: 
+//
+// Dependencies: 
+//
+// Revision: 
+// Revision 0.01 - File Created
+// Additional Comments: Authored by Mainak Chaudhuri
+//
+//////////////////////////////////////////////////////////////////////////////////
+`include "state_defs.v"
+`include "memop_defs.v"
+
+module mem(clk, state, address, op, store_value, load_value
+    );
+
+   	input clk;
+	input [2:0] state;
+	input [7:0] address;
+	input [1:0] op;
+	input [7:0] store_value;
+	
+	output [7:0] load_value;
+	
+	reg [7:0] load_value;
+	
+	reg [7:0] data_mem [0:10];
+	
+	initial begin
+	   	data_mem[0] = 8'b00000001;
+		data_mem[1] = 8'b00000010;
+		data_mem[2] = 8'b00000011;
+		data_mem[3] = 8'b00000100;
+		data_mem[4] = 8'b00000101;
+		data_mem[5] = 8'b00000110;
+		data_mem[6] = 8'b00000111;
+		data_mem[7] = 8'b00001000;
+		data_mem[8] = 8'b00001001;
+		data_mem[9] = 8'b00001010;
+		data_mem[10] = 8'b0001000;
+	end
+	
+	always @ (posedge clk) begin
+	   	if (state == `STATE_MEM) begin
+		   	if (op == `MEM_READ) begin
+			   	load_value <= data_mem[address];
+			end
+			else if (op == `MEM_WRITE) begin
+			   	data_mem[address] <= store_value;
+			end
+		end
+	end
+
+endmodule

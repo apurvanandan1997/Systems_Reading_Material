@@ -1,0 +1,64 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date:    11:01:13 04/26/2018 
+// Design Name: 
+// Module Name:    fetch 
+// Project Name: 
+// Target Devices: 
+// Tool versions: 
+// Description: 
+//
+// Dependencies: 
+//
+// Revision: 
+// Revision 0.01 - File Created
+// Additional Comments: Authored by Mainak Chaudhuri
+//
+//////////////////////////////////////////////////////////////////////////////////
+`define MAX_ROW 8
+
+module fetch(clk, data_packet, data_packet_valid, done
+    );
+
+   	input clk;
+	
+	output [15:0] data_packet;
+	output data_packet_valid;
+	output done;
+	
+	reg [15:0] data_packet;
+	reg data_packet_valid;
+	reg done;
+	
+	reg [15:0] data_memory [0:7];
+	reg [3:0] row_index;
+	
+	initial begin
+	   	data_memory[0] = 16'h0000;
+		data_memory[1] = 16'h8800;
+		data_memory[2] = 16'h0100;
+		data_memory[3] = 16'h8000;
+		data_memory[4] = 16'h0001;
+		data_memory[5] = 16'h0800;
+		data_memory[6] = 16'h8110;
+		data_memory[7] = 16'h0080;
+		row_index = 0;
+		done = 0;
+		data_packet_valid = 0;
+	end
+	
+	always @ (posedge clk) begin
+	   	if (done == 0) begin
+		   	data_packet <= data_memory[row_index];
+			data_packet_valid <= 1;
+			row_index <= row_index + 1;
+		end
+		if (row_index == `MAX_ROW) begin
+		   	done <= 1;
+		end
+	end
+
+endmodule

@@ -1,0 +1,74 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date:    22:23:27 04/25/2018 
+// Design Name: 
+// Module Name:    interface 
+// Project Name: 
+// Target Devices: 
+// Tool versions: 
+// Description: 
+//
+// Dependencies: 
+//
+// Revision: 
+// Revision 0.01 - File Created
+// Additional Comments: Authored by Mainak Chaudhuri
+//
+//////////////////////////////////////////////////////////////////////////////////
+module interface(clk, sw0, led0, led1, led2, led3, led4, led5, led6, led7
+    );
+
+   	input clk, sw0;
+	
+	output led0, led1, led2, led3, led4, led5, led6, led7;
+	
+	reg led0, led1, led2, led3, led4, led5, led6, led7;
+	
+	wire [31:0] ins;
+	wire ins_valid;
+	wire done;
+	wire [3:0] icount;
+	wire [3:0] rcount;
+	wire [3:0] jcount;
+	wire [3:0] wc3;
+	wire [3:0] wc4;
+	wire [3:0] wc5;
+	wire [3:0] wc6;
+	
+	fetch ifetch (ins, ins_valid, done, clk);
+	decode idecode (ins, ins_valid, done, clk, icount, rcount, jcount, wc3, wc4, wc5, wc6);
+	
+	always @ (posedge clk) begin
+	   	if (done == 1'b1) begin
+		   	if (sw0 == 1'b0) begin
+		      		led2 <= rcount[2];
+				led1 <= rcount[1];
+				led0 <= rcount[0];
+				
+				led5 <= icount[2];
+				led4 <= icount[1];
+				led3 <= icount[0];
+				
+				led7 <= jcount[1];
+				led6 <= jcount[0];
+			end
+			else begin
+			   	led1 <= wc3[1];
+				led0 <= wc3[0];
+				
+				led3 <= wc4[1];
+				led2 <= wc4[0];
+				
+				led5 <= wc5[1];
+				led4 <= wc5[0];
+				
+				led7 <= wc6[1];
+				led6 <= wc6[0];
+			end
+		end
+	end
+
+endmodule

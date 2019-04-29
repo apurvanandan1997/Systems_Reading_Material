@@ -1,0 +1,55 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date:    08:45:41 04/26/2018 
+// Design Name: 
+// Module Name:    index_decode 
+// Project Name: 
+// Target Devices: 
+// Tool versions: 
+// Description: 
+//
+// Dependencies: 
+//
+// Revision: 
+// Revision 0.01 - File Created
+// Additional Comments: Authored by Mainak Chaudhuri
+//
+//////////////////////////////////////////////////////////////////////////////////
+module index_decode(clk, index_reg, index_reg_valid, done, xored_output, output_parity
+    );
+
+   	input clk;
+	input [2:0] index_reg;
+	input index_reg_valid;
+	input done;
+	
+	output [7:0] xored_output;
+	output output_parity;
+	
+	reg [7:0] xored_output;
+	reg output_parity;
+	
+	initial begin
+	   	xored_output = 0;
+	end
+	
+	always @ (posedge clk) begin
+	   	if ((done == 0) && (index_reg_valid == 1)) begin
+		   	xored_output[0] <= xored_output[0] ^ (~index_reg[2] & ~index_reg[1] & ~index_reg[0]);
+			xored_output[1] <= xored_output[1] ^ (~index_reg[2] & ~index_reg[1] &  index_reg[0]);
+			xored_output[2] <= xored_output[2] ^ (~index_reg[2] &  index_reg[1] & ~index_reg[0]);
+			xored_output[3] <= xored_output[3] ^ (~index_reg[2] &  index_reg[1] &  index_reg[0]);
+			xored_output[4] <= xored_output[4] ^ ( index_reg[2] & ~index_reg[1] & ~index_reg[0]);
+			xored_output[5] <= xored_output[5] ^ ( index_reg[2] & ~index_reg[1] &  index_reg[0]);
+			xored_output[6] <= xored_output[6] ^ ( index_reg[2] &  index_reg[1] & ~index_reg[0]);
+			xored_output[7] <= xored_output[7] ^ ( index_reg[2] &  index_reg[1] &  index_reg[0]);
+		end
+		else if (done == 1) begin
+		   	output_parity <= xored_output[0] ^ xored_output[1] ^ xored_output[2] ^ xored_output[3] ^ xored_output[4] ^ xored_output[5] ^ xored_output[6] ^ xored_output[7];
+		end
+	end
+
+endmodule

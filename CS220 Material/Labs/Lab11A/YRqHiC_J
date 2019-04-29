@@ -1,0 +1,75 @@
+# dotproduct.s
+#
+# Author: Mainak Chaudhuri
+#
+
+           .data
+arrayA:    .space 60
+arrayB:    .space 60
+inputmsgn: .asciiz "Enter n:\n"
+inputmsgA: .asciiz "Enter array A:\n"
+inputmsgB: .asciiz "Enter array B:\n"
+errmsg:    .asciiz "n must be positive.\n"
+msg:       .asciiz "Dot product: "
+endmsg:    .asciiz "\n"
+
+        .text
+        .globl main
+main:   li   $v0, 4           # syscall 4 (print_string)
+        la   $a0, inputmsgn   # prompt to input n
+        syscall
+        li   $v0, 5           # syscall 5 (read_int)
+        syscall               # read n
+        slti $t0, $v0, 1      # if (n < 1) leave with error msg
+        beq  $t0, $0, loop
+        li   $v0, 4           # syscall 4 (print_string)
+        la   $a0, errmsg
+        syscall
+        jr   $ra
+loop:   add  $t0, $v0, $0     # $t0 has n
+        li   $v0, 4
+        la   $a0, inputmsgA   # prompt to input A
+        syscall
+        xor  $t1, $t1, $t1
+        la   $t2, arrayA      # $t2 has starting address of arrayA
+        li   $v0, 6           # syscall 6 (read_float)
+loop1:  syscall
+        swc1 $f0, 0($t2)
+        addi $t1, $t1, 1
+        addi $t2, $t2, 4
+        slt  $t3, $t1, $t0
+        bne  $t3, $0, loop1
+        li   $v0, 4
+        la   $a0, inputmsgB    # prompt to input B
+        syscall
+        xor  $t1, $t1, $t1
+        la   $t2, arrayB
+        li   $v0, 6
+loop2:  syscall
+        swc1 $f0, 0($t2)
+        addi $t1, $t1, 1
+        addi $t2, $t2, 4
+        slt  $t3, $t1, $t0
+        bne  $t3, $0, loop2
+        xor  $t1, $t1, $t1
+        mtc1 $t1, $f12          # initialize $f12 to 0 (inner product)
+        la   $t2, arrayA
+        la   $t3, arrayB
+loop3:  lwc1 $f0, 0($t2)
+        lwc1 $f1, 0($t3)
+        mul.s $f2, $f0, $f1     # compute A[i]*B[i]
+        add.s $f12, $f12, $f2   # accumulate into inner product
+        addi $t1, $t1, 1
+        addi $t2, $t2, 4
+        addi $t3, $t3, 4
+        slt  $t4, $t1, $t0
+        bne  $t4, $0, loop3
+        li   $v0, 4
+        la   $a0, msg           # print inner product
+        syscall
+        li   $v0, 2
+        syscall
+        li   $v0, 4
+        la   $a0, endmsg
+        syscall
+        jr   $ra

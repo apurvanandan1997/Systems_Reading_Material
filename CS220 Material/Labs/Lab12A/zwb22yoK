@@ -1,0 +1,64 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date:    08:36:38 04/26/2018 
+// Design Name: 
+// Module Name:    index_fetch 
+// Project Name: 
+// Target Devices: 
+// Tool versions: 
+// Description: 
+//
+// Dependencies: 
+//
+// Revision: 
+// Revision 0.01 - File Created
+// Additional Comments: Authored by Mainak Chaudhuri
+//
+//////////////////////////////////////////////////////////////////////////////////
+`define MAX_ROW 8
+
+module index_fetch(clk, index_reg, index_reg_valid, done
+    );
+
+   	input clk;
+	
+	output [2:0] index_reg;
+	output index_reg_valid;
+	output done;
+	
+	reg [2:0] index_reg;
+	reg index_reg_valid;
+	reg done;
+	
+	reg [2:0] index_mem [0:7];
+	reg [3:0] row_index;
+	
+	initial begin
+	   	index_mem[0] = 3;
+		index_mem[1] = 4;
+		index_mem[2] = 7;
+		index_mem[3] = 2;
+		index_mem[4] = 3;
+		index_mem[5] = 5;
+		index_mem[6] = 0;
+		index_mem[7] = 2;
+		index_reg_valid = 0;
+		done = 0;
+		row_index = 0;
+	end
+	
+	always @ (posedge clk) begin
+	   	if (done == 0) begin
+		   	index_reg <= index_mem[row_index];
+			index_reg_valid <= 1;
+			row_index <= row_index + 1;
+		end
+		if (row_index == `MAX_ROW) begin
+		   	done <= 1;
+		end
+	end
+
+endmodule

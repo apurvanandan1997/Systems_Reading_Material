@@ -1,0 +1,117 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date:    18:43:23 04/25/2018 
+// Design Name: 
+// Module Name:    decode 
+// Project Name: 
+// Target Devices: 
+// Tool versions: 
+// Description: 
+//
+// Dependencies: 
+//
+// Revision: 
+// Revision 0.01 - File Created
+// Additional Comments: Authored by Mainak Chaudhuri
+//
+//////////////////////////////////////////////////////////////////////////////////
+module decode(instruction_reg, instruction_reg_valid, done, clk, icount, rcount, jcount, wc3, wc4, wc5, wc6
+    );
+
+   	input [31:0] instruction_reg;
+	input instruction_reg_valid;
+	input done;
+	input clk;
+	
+	output [3:0] icount;
+	output [3:0] rcount;
+	output [3:0] jcount;
+	output [3:0] wc3;
+	output [3:0] wc4;
+	output [3:0] wc5;
+	output [3:0] wc6;
+	
+	reg [3:0] icount;
+	reg [3:0] rcount;
+	reg [3:0] jcount;
+	reg [3:0] wc3;
+	reg [3:0] wc4;
+	reg [3:0] wc5;
+	reg [3:0] wc6;
+	
+	initial begin
+	   	icount = 4'b0;
+		rcount = 4'b0;
+		jcount = 4'b0;
+		wc3 = 4'b0;
+		wc4 = 4'b0;
+		wc5 = 4'b0;
+		wc6 = 4'b0;
+	end
+	
+	always @ (posedge clk) begin
+	   	if ((done == 1'b0) && (instruction_reg_valid == 1'b1)) begin
+		   	if (instruction_reg[31:26] == 6'h0) begin
+			   rcount <= rcount + 1;
+			end
+			else if (instruction_reg[31:26] == 6'h2) begin
+			   jcount <= jcount + 1;
+			end
+			else if (instruction_reg[31:26] == 6'h3) begin
+			   jcount <= jcount + 1;
+			end
+			else begin
+			   icount <= icount + 1;
+			end
+			
+			if ((instruction_reg[31:26] == 6'h0) && (instruction_reg[15:11] == 5'h3)) begin
+			   wc3 <= wc3 + 1;
+			end
+			else if ((instruction_reg[31:26] == 6'h0) && (instruction_reg[15:11] == 5'h4)) begin
+			   wc4 <= wc4 + 1;
+			end
+			else if ((instruction_reg[31:26] == 6'h0) && (instruction_reg[15:11] == 5'h5)) begin
+			   wc5 <= wc5 + 1;
+			end
+			else if ((instruction_reg[31:26] == 6'h0) && (instruction_reg[15:11] == 5'h6)) begin
+			   wc6 <= wc6 + 1;
+			end
+			else if ((instruction_reg[31:26] != 6'h0) && (instruction_reg[31:26] != 6'h4) && (instruction_reg[31:26] != 6'h1) &&
+			         (instruction_reg[31:26] != 6'h7) && (instruction_reg[31:26] != 6'h6) && (instruction_reg[31:26] != 6'h5) &&
+				 (instruction_reg[31:26] != 6'h2) && (instruction_reg[31:26] != 6'h3) && (instruction_reg[31:26] != 6'h39) &&
+				 (instruction_reg[31:26] != 6'h28) && (instruction_reg[31:26] != 6'h29) && (instruction_reg[31:26] != 6'h2a) &&
+				 (instruction_reg[31:26] != 6'h2b) && (instruction_reg[31:26] != 6'h2e) && (instruction_reg[31:26] != 6'h11) &&
+				 (instruction_reg[20:16] == 5'h3)) begin
+			   wc3 <= wc3 + 1;
+			end
+			else if ((instruction_reg[31:26] != 6'h0) && (instruction_reg[31:26] != 6'h4) && (instruction_reg[31:26] != 6'h1) &&
+			         (instruction_reg[31:26] != 6'h7) && (instruction_reg[31:26] != 6'h6) && (instruction_reg[31:26] != 6'h5) &&
+				 (instruction_reg[31:26] != 6'h2) && (instruction_reg[31:26] != 6'h3) && (instruction_reg[31:26] != 6'h39) &&
+				 (instruction_reg[31:26] != 6'h28) && (instruction_reg[31:26] != 6'h29) && (instruction_reg[31:26] != 6'h2a) &&
+				 (instruction_reg[31:26] != 6'h2b) && (instruction_reg[31:26] != 6'h2e) && (instruction_reg[31:26] != 6'h11) &&
+				 (instruction_reg[20:16] == 5'h4)) begin
+			   wc4 <= wc4 + 1;
+			end
+			else if ((instruction_reg[31:26] != 6'h0) && (instruction_reg[31:26] != 6'h4) && (instruction_reg[31:26] != 6'h1) &&
+			         (instruction_reg[31:26] != 6'h7) && (instruction_reg[31:26] != 6'h6) && (instruction_reg[31:26] != 6'h5) &&
+				 (instruction_reg[31:26] != 6'h2) && (instruction_reg[31:26] != 6'h3) && (instruction_reg[31:26] != 6'h39) &&
+				 (instruction_reg[31:26] != 6'h28) && (instruction_reg[31:26] != 6'h29) && (instruction_reg[31:26] != 6'h2a) &&
+				 (instruction_reg[31:26] != 6'h2b) && (instruction_reg[31:26] != 6'h2e) && (instruction_reg[31:26] != 6'h11) &&
+				 (instruction_reg[20:16] == 5'h5)) begin
+			   wc5 <= wc5 + 1;
+			end
+			else if ((instruction_reg[31:26] != 6'h0) && (instruction_reg[31:26] != 6'h4) && (instruction_reg[31:26] != 6'h1) &&
+			         (instruction_reg[31:26] != 6'h7) && (instruction_reg[31:26] != 6'h6) && (instruction_reg[31:26] != 6'h5) &&
+				 (instruction_reg[31:26] != 6'h2) && (instruction_reg[31:26] != 6'h3) && (instruction_reg[31:26] != 6'h39) &&
+				 (instruction_reg[31:26] != 6'h28) && (instruction_reg[31:26] != 6'h29) && (instruction_reg[31:26] != 6'h2a) &&
+				 (instruction_reg[31:26] != 6'h2b) && (instruction_reg[31:26] != 6'h2e) && (instruction_reg[31:26] != 6'h11) &&
+				 (instruction_reg[20:16] == 5'h6)) begin
+			   wc6 <= wc6 + 1;
+			end
+		end
+	end
+
+endmodule
